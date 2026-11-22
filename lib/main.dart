@@ -33,7 +33,12 @@ class _PlatformChannelPageState extends State<PlatformChannelPage> {
   // Nama MethodChannel harus identik dengan yang di MainActivity (case-sensitive)
   static const platform = MethodChannel('com.example.app/battery');
 
+  
+  static const String _nim = '2411500082';
+  static const String _nama = 'Peter Antonius Lie';
+
   String _batteryLevel = 'Belum diketahui';
+  bool _isLong = false; // true = Toast.LENGTH_LONG, false = Toast.LENGTH_SHORT
   final TextEditingController _toastController = TextEditingController();
 
   // Mengambil data baterai dari native Android
@@ -51,14 +56,17 @@ class _PlatformChannelPageState extends State<PlatformChannelPage> {
     });
   }
 
-  // Mengirim data teks ke native Android untuk ditampilkan sebagai Toast
+  // Mengirim data teks + durasi ke native Android untuk ditampilkan sebagai Toast
   Future<void> _showNativeToast() async {
     final String textToSend = _toastController.text.trim().isEmpty
-        ? 'Ini adalah Native Toast dari Flutter!'
+        ? '$_nim - $_nama'
         : _toastController.text.trim();
 
     try {
-      await platform.invokeMethod('showToast', {'message': textToSend});
+      await platform.invokeMethod('showToast', {
+        'message': textToSend,
+        'isLong': _isLong,
+      });
     } on PlatformException catch (e) {
       debugPrint("Gagal menampilkan Toast: ${e.message}");
     }
@@ -89,11 +97,18 @@ class _PlatformChannelPageState extends State<PlatformChannelPage> {
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
-                    const Icon(Icons.battery_charging_full, size: 48, color: Colors.green),
+                    const Icon(
+                      Icons.battery_charging_full,
+                      size: 48,
+                      color: Colors.green,
+                    ),
                     const SizedBox(height: 12),
                     Text(
                       _batteryLevel,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 16),
@@ -118,7 +133,10 @@ class _PlatformChannelPageState extends State<PlatformChannelPage> {
                   children: [
                     const Text(
                       'Kirim Pesan ke Native Toast',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 12),
                     TextField(
@@ -126,10 +144,20 @@ class _PlatformChannelPageState extends State<PlatformChannelPage> {
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         labelText: 'Tulis pesan Toast',
-                        hintText: 'Contoh: Halo dari mahasiswa Flutter!',
+                        hintText: 'Kosongkan untuk menampilkan NIM & nama',
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 8),
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('Durasi panjang (LENGTH_LONG)'),
+                      subtitle: Text(
+                        _isLong ? 'Toast.LENGTH_LONG' : 'Toast.LENGTH_SHORT',
+                      ),
+                      value: _isLong,
+                      onChanged: (value) => setState(() => _isLong = value),
+                    ),
+                    const SizedBox(height: 8),
                     FilledButton.icon(
                       onPressed: _showNativeToast,
                       icon: const Icon(Icons.notifications_active),

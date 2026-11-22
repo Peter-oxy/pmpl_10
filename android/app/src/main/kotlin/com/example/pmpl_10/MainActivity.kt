@@ -33,7 +33,10 @@ class MainActivity: FlutterActivity() {
                     "showToast" -> {
                         // Mengambil argumen 'message' yang dikirim dari Flutter
                         val message = call.argument<String>("message") ?: "Halo dari Native Android!"
-                        Toast.makeText(applicationContext, message, Toast.LENGTH_SHORT).show()
+                        // Mengambil argumen 'isLong' (Boolean) untuk memilih durasi Toast
+                        val isLong = call.argument<Boolean>("isLong") ?: false
+                        val duration = if (isLong) Toast.LENGTH_LONG else Toast.LENGTH_SHORT
+                        Toast.makeText(applicationContext, message, duration).show()
                         result.success(true)
                     }
                     else -> {
